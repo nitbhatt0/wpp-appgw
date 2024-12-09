@@ -10,28 +10,28 @@ resource "azurerm_resource_group" "rg" {
 }
 
 resource "azurerm_virtual_network" "vnet" {
-  name                = "myVNet"
+  name                = "myVNet-${random_string.rg.result}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   address_space       = ["10.21.0.0/16"]
 }
 
 resource "azurerm_subnet" "frontend" {
-  name                 = "myAGSubnet"
+  name                 = "myAGSubnet-${random_string.rg.result}"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.21.0.0/24"]
 }
 
 resource "azurerm_subnet" "backend" {
-  name                 = "myBackendSubnet"
+  name                 = "myBackendSubnet-${random_string.rg.result}"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.21.1.0/24"]
 }
 
 resource "azurerm_public_ip" "pip" {
-  name                = "myAGPublicIPAddress"
+  name                = "myAGPublicIPAddress-${random_string.rg.result}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   allocation_method   = "Static"
@@ -126,7 +126,7 @@ resource "random_password" "password" {
 
 resource "azurerm_windows_virtual_machine" "vm" {
   count               = 2
-  name                = "myVM${count.index+1}"
+  name                = "myVM${count.index+1}-${random_string.rg.result}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   size                = "Standard_D4s_v3"
@@ -193,7 +193,7 @@ resource "azurerm_network_interface_application_gateway_backend_address_pool_ass
 }
  
 resource "azurerm_log_analytics_workspace" "example" {
-  name                = "example-law"
+  name                = "example-law-${random_string.rg.result}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   sku                 = "PerGB2018"
@@ -201,7 +201,7 @@ resource "azurerm_log_analytics_workspace" "example" {
 }
 
 resource "azurerm_application_gateway" "main" {
-  name                = "myAppGateway"
+  name                = "myAppGateway-${random_string.rg.result}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
 
@@ -212,22 +212,22 @@ resource "azurerm_application_gateway" "main" {
   }
 
   gateway_ip_configuration {
-    name      = "my-gateway-ip-configuration"
+    name      = "my-gateway-ip-configuration-${random_string.rg.result}"
     subnet_id = azurerm_subnet.frontend.id
   }
 
   frontend_port {
-    name = var.frontend_port_name
+    name = var.frontend_port_name-${random_string.rg.result}
     port = 80
   }
 
   frontend_ip_configuration {
-    name                 = var.frontend_ip_configuration_name
+    name                 = var.frontend_ip_configuration_name-${random_string.rg.result}
     public_ip_address_id = azurerm_public_ip.pip.id
   }
 
   backend_address_pool {
-    name = var.backend_address_pool_name
+    name = var.backend_address_pool_name-${random_string.rg.result}
   }
 
   backend_http_settings {
@@ -263,7 +263,7 @@ resource "azurerm_application_gateway" "main" {
   }
 }
   resource "azurerm_monitor_diagnostic_setting" "example" {
-  name               = "appgw-diagnostic-setting"
+  name               = "appgw-diagnostic-setting-${random_string.rg.result}"
   target_resource_id = azurerm_application_gateway.main.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.example.id
 
